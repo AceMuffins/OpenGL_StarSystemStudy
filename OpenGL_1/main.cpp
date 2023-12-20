@@ -4,14 +4,10 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include "shader.h"
 #include "stb_image.h"
 #include "camera.h"
+#include "model.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -29,7 +25,7 @@ const unsigned int SCR_HEIGHT = 800;
 int width, height;
 
 //Camera stuff
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 3.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -84,123 +80,14 @@ int main()
 
 	Shader ourShader(".\\shaders\\shader.vs", ".\\shaders\\shader.fs");
 	Shader lightShader(".\\shaders\\light.vs", ".\\shaders\\light.fs");
+	char modelPath[] = ".\\models\\maxwell\\maxwell.obj";
+	char sunPath[] = ".\\models\\planet\\sun.obj";
+	Model ourModel(modelPath);
+	Model sunModel(sunPath);
 
 	//arrays for colors, vertices and indices
-	float colorBackground[4] = { 0.2f, 0.3f, 0.3f, 1.0f };
-	float vertices[] = {
-		// positions // normals // texture coords
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
-	};
-	/*glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(2.0f, 5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f, 3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f, 2.0f, -2.5f),
-		glm::vec3(1.5f, 0.2f, -1.5f),
-		glm::vec3(-1.3f, 1.0f, -1.5f)
-	};*/
-	glm::vec3 cubePositions[] = {
-		glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(2.5f, 0.0f, 0.0f),
-		glm::vec3(4.0f, 0.0f, 0.0f),
-		glm::vec3(5.5f, 0.0f, 0.0f),
-		glm::vec3(7.0f, 0.0f, 0.0f),
-		glm::vec3(8.5f, 0.0f, 0.0f),
-		glm::vec3(10.0f, 0.0f, 0.0f),
-		glm::vec3(11.5f, 0.0f, 0.0f),
-		glm::vec3(13.0f, 0.0f, 0.0f)
-	};
-	float cubeScales[] = {
-		0.4f,
-		1.f,
-		1.f,
-		0.8f,
-		1.3f,
-		1.1f,
-		0.4f,
-		0.1f,
-		0.8f,
-		0.9f
-	};
+	float colorBackground[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
 
-	//configuring VBO, VAOs and EBOs.
-	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicesShape), indicesShape, GL_STATIC_DRAW);
-
-	//poisition
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	//normal
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	//texture
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-
-	unsigned int lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	// we only need to bind to the VBO, the container’s VBO’s data
-	// already contains the data.
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//poisition
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	//normal
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	//texture
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 
 
 	//textures
@@ -261,7 +148,9 @@ int main()
 
 	bool rotate = false;
 	bool warp = false;
-
+	bool flip = false;
+	float angle = 0;
+	float angular_speed = 0;
 	//main render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -290,8 +179,8 @@ int main()
 		ourShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f); // darkened
 		ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		ourShader.setFloat("light.constant", 1.0f);
-		ourShader.setFloat("light.linear", 0.09f);
-		ourShader.setFloat("light.quadratic", 0.032f);
+		ourShader.setFloat("light.linear", 0.027f);
+		ourShader.setFloat("light.quadratic", 0.0028f);
 
 		// pass projection matrix to shader (note that in this case it could change every frame)
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
@@ -300,7 +189,7 @@ int main()
 		ourShader.setMat4("view", view);
 
 
-		glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
+		glm::vec3 lightPos(4.0f, 4.0f, 4.0f);
 
 
 		glm::mat4 model = glm::mat4(1.0f);
@@ -309,32 +198,48 @@ int main()
 		ourShader.setVec3("viewPos", camera.Position);
 		model = glm::mat4(1.0f);
 		glm::mat3 normal = glm::mat3(1.0f);
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-
-			if (rotate) {
-				float angle = 20.0f * (i + 1) * currentFrame;
-				model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			}
-
-			if (warp) {
-				float offset = (3.14159f * 2.0f / 3.0f);
-				double x_scale = glm::sin(currentFrame * 5 * (i + 1)) * 0.6 + 1.0f * 1.f;
-				double y_scale = glm::sin(currentFrame * 5 * (i + 1) + offset) * 0.6 + 1.0f * 1.f;
-				double z_scale = glm::sin(currentFrame * 5 * (i + 1) + 2 * offset) * 0.6 + 1.0f * 1.f;
-				model = glm::scale(model, glm::vec3(x_scale, y_scale, z_scale));
-			}
-			model = glm::scale(model, glm::vec3(cubeScales[i]));
-
-			normal = glm::mat3(glm::transpose(glm::inverse(model)));
-			ourShader.setMat4("model", model);
-			ourShader.setMat3("transNormal", normal);
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		model = glm::mat4(1.0f);
+		angular_speed = deltaTime * 60.f;
+		if (angle > 15.0f) {
+			flip = true;
 		}
+		if(angle < -15.0f){
+			flip = false;
+		}
+		if (flip) {
+			angle = angle - angular_speed;
+		} else {
+			angle = angle + angular_speed;
+		}
+		/* easing - kinda jank
+		float x = angle / 15.f;
+		float easing = -(cos(3.14159f * x) - 1.f) / 2.f;
+		float ease_angle = angle * easing;
+		*/
+		if (angle > 0.0f) {
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, -1.0f));
+		}
+		else {
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, -1.0f));
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
+		}
+		/*
+		float angle = 20.0f * currentFrame;
+		float speed = 10.0f * currentFrame;
+		model = glm::rotate(model, glm::radians(speed), glm::vec3(0.0f, 1.0f, 0.0f)); //orbit
+		model = glm::translate(model, glm::vec3(5.0f, 0.0f, 0.0f)); //orbit distance
+		//model = glm::rotate(model, glm::radians(26.73f), glm::vec3(1.0f, 0.0f, 0.0f)); //axial tilt
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f)); //spin
+		*/
 
+		normal = glm::mat3(glm::transpose(glm::inverse(model)));
+		ourShader.setMat4("model", model);
+		ourShader.setMat3("transNormal", normal);
+		ourModel.Draw(ourShader);
 
 		lightShader.use();
 		lightShader.setMat4("projection", projection);
@@ -344,10 +249,9 @@ int main()
 		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
 		lightShader.setMat4("model", model);
 
-		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		sunModel.Draw(lightShader);
 
-
+		/*
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -361,7 +265,7 @@ int main()
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+		*/
 
 		//poll events and swap buffers
 		glfwSwapBuffers(window);
@@ -372,11 +276,6 @@ int main()
 	//ImGui_ImplOpenGL3_Shutdown();
 	//ImGui_ImplGlfw_Shutdown();
 	//ImGui::DestroyContext();
-
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteVertexArrays(1, &lightVAO);
 
 	glfwTerminate();
 	return 0;

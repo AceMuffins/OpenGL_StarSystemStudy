@@ -45,7 +45,7 @@ class Model
 				cout << "ERROR::ASSIMP::" << import.GetErrorString() << endl;
 				return;
 			}
-			directory = path.substr(0, path.find_last_of('/'));
+			directory = path.substr(0, path.find_last_of('\\'));
 			processNode(scene->mRootNode, scene);
 		}
 		void processNode(aiNode* node, const aiScene* scene)
