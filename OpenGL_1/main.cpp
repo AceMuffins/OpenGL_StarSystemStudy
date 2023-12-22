@@ -566,7 +566,7 @@ void drawDevourer(float currentFrame, Shader &objShader, Model &objModel, bool s
 				model = glm::rotate(model, glm::radians(angle), glm::vec3(1.f, 0.f, 0.f));
 				model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
 			}
-			drawModel(model, objShader, objModel, outline);
+			drawModel(model, objShader, objModel, false);
 		}
 	} else {
 		for (int i = 0; i < cat_cnt; i++) {
@@ -580,7 +580,7 @@ void drawDevourer(float currentFrame, Shader &objShader, Model &objModel, bool s
 				model = glm::translate(model, glm::vec3(0.f, -0.1f, 0.0f));
 				model = glm::scale(model, glm::vec3(1.1f));
 			}
-			drawModel(model, objShader, objModel, outline);
+			drawModel(model, objShader, objModel, false);
 		}
 	}
 	
