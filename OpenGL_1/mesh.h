@@ -28,19 +28,16 @@ class Mesh {
 		vector<Vertex> vertices;
 		vector<unsigned int> indices;
 		vector<Texture> textures;
-		Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
-		{
+		Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) {
 			this->vertices = vertices;
 			this->indices = indices;
 			this->textures = textures;
 			setupMesh();
 		}
-		void Draw(Shader& shader)
-		{
+		void Draw(Shader& shader) {
 			unsigned int diffuseNr = 1;
 			unsigned int specularNr = 1;
-			for (unsigned int i = 0; i < textures.size(); i++)
-			{
+			for (unsigned int i = 0; i < textures.size(); i++) {
 				glActiveTexture(GL_TEXTURE0 + i); // activate texture unit first
 				// retrieve texture number (the N in diffuse_textureN)
 				string number;
@@ -52,8 +49,8 @@ class Mesh {
 				shader.setInt(("material." + name + number).c_str(), i);
 				glBindTexture(GL_TEXTURE_2D, textures[i].id);
 			}
-			//glActiveTexture(GL_TEXTURE0);
-			// draw mesh
+			glActiveTexture(GL_TEXTURE0);
+			//draw mesh
 			glBindVertexArray(VAO);
 			glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 			glBindVertexArray(0);
@@ -61,8 +58,7 @@ class Mesh {
 	private:
 		// render data
 		unsigned int VAO, VBO, EBO;
-		void setupMesh()
-		{
+		void setupMesh() {
 			glGenVertexArrays(1, &VAO);
 			glGenBuffers(1, &VBO);
 			glGenBuffers(1, &EBO);
